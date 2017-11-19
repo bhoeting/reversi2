@@ -1,37 +1,44 @@
 package edu.miami.cse.reversi.strategy.Knotttv_Strategic_Tests;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import edu.miami.cse.reversi.Board;
-import edu.miami.cse.reversi.Move;
 import edu.miami.cse.reversi.Player;
 import edu.miami.cse.reversi.Square;
 
 public class Heuristics {
 
-	// Returns best move from array of moves
-
 	// Orders an array of "SmartMoves" from highest heuristic value to lowest
-	static public Object[] orderMoves(Board board, Object[] possibleMoves) {
-		for (int i = 0; 0 < possibleMoves.length; i++)
-			calculateHeuristics(board, (SmartSquare)possibleMoves[i]);
-		Arrays.sort(possibleMoves);
-		return possibleMoves;
+	public static ArrayList<Square> orderMoves(Board board, ArrayList<Square> squares) {	
+		ArrayList<SmartSquare> smartSquares = new ArrayList<SmartSquare>();
+		for (Square square : squares){	
+			SmartSquare smartSquare = new SmartSquare(square);
+			calculateHeuristics(board, smartSquare) ;
+			smartSquares.add(smartSquare);
+		}
+		Collections.sort(smartSquares);
+		squares.clear();
+		for (Square square : smartSquares){
+			squares.add(square);
+		}
+		return squares;
 	}
 
 	// Calculates heuristic for given move
 	public static void calculateHeuristics(Board board, SmartSquare square) {
 		Board tempBoard = board;
 		Player user = board.getCurrentPlayer();
-
+		
 		//Counts totals before you make a move
 		int old2x2 = getCenter2x2Count(tempBoard, user);
 		int old4x4 = getCenter4x4Count(tempBoard, user);
 		int oldEdges = getEdgeCount(tempBoard, user);
 		int oldCorners = getCornerCount(tempBoard, user);
-
+		
 		tempBoard.play(square);
-
+		
 		//Counts totals after you make a move
 		int middleSquareCount = getCenter2x2Count(tempBoard, user) - old2x2;
 		int outerSquareCount = getCenter4x4Count(tempBoard, user) - old4x4;
@@ -129,11 +136,11 @@ public class Heuristics {
 	}
 
 	// Extension of Move class
-	private class SmartSquare extends Square implements Comparable {
+	private static class SmartSquare extends Square implements Comparable {
 		int heuristic;
 
-		public SmartSquare(int row, int column) {
-			super(row, column);
+		public SmartSquare(Square square) {
+			super(square.getRow(), square.getColumn());
 			this.heuristic = 0;
 		}
 
@@ -154,3 +161,5 @@ public class Heuristics {
 	}
 
 }
+
+
