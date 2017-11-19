@@ -4,6 +4,7 @@ import edu.miami.cse.reversi.Board;
 import edu.miami.cse.reversi.Square;
 import edu.miami.cse.reversi.Strategy;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -41,16 +42,31 @@ public class AlphaBeta implements Strategy {
 
 
         //Send to brendan
-//        Object[] possibileMoves = Heuristics.orderMoves(board, initialBoard.getCurrentPossibleSquares().toArray());
-
         ArrayList<Square> possibileMoves = new ArrayList<>(board.getCurrentPossibleSquares());
+
+        System.out.print("Before: ");
+        for(Square s : possibileMoves){
+            System.out.print(s.toString() + " ");
+        }
+        System.out.println();
+        possibileMoves = Heuristics.orderMoves(board, possibileMoves);
+        System.out.print("After: ");
+        for(Square s : possibileMoves){
+            System.out.print(s.toString() + " ");
+        }
+
+        System.out.println();
+
 
         //Start with an arbitrary move, in the future we will do an intelligent move selection
         //send wantToMaximize as false to start because the immediate proceeding recursive call will be a minimization
 
-        optimalMove = possibileMoves.get(new Random().nextInt(possibileMoves.size()));
+        //Gets the first element
+        optimalMove = possibileMoves.get(0);
 
-//        optimalMove = (Square)possibileMoves[0];
+        //Gets a random element
+//        optimalMove = possibileMoves.get(new Random().nextInt(possibileMoves.size()));
+
 
         int currentUtilityScore = a_b_Pruning(initialBoard.play(optimalMove),
                 alpha,
@@ -63,11 +79,9 @@ public class AlphaBeta implements Strategy {
             if (alpha >= beta || initialBoard.isComplete()) break;
 
             if(MAX_TIME - (System.currentTimeMillis() - startTime) < MAX_TIME - 100){
-                System.out.println("Ran Out of Time");
+//                System.out.println("Ran Out of Time");
                 return optimalMove;
                 }
-
-
             //update aplha/beta based on the currentUtilityScore
             if (wantToMaximize){
                 alpha = alpha > currentUtilityScore ? alpha : currentUtilityScore;

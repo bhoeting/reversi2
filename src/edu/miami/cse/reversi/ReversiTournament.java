@@ -18,7 +18,7 @@ public class ReversiTournament {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		int nGames = 1;
+		int nGames = 5;
 		long timeout = 1;
 		TimeUnit timeoutUnit = TimeUnit.SECONDS;
 

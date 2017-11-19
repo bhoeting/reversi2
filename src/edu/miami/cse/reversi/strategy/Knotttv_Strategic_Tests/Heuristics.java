@@ -1,23 +1,24 @@
 package edu.miami.cse.reversi.strategy.Knotttv_Strategic_Tests;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import edu.miami.cse.reversi.Board;
-import edu.miami.cse.reversi.Player;
 import edu.miami.cse.reversi.Square;
 
 public class Heuristics {
 
-	// Orders an array of "SmartMoves" from highest heuristic value to lowest
+	// Orders an array of "SmartMoves" from highest heuristic value to lowest that way it is able to analyze the best move first
+
 	public static ArrayList<Square> orderMoves(Board board, ArrayList<Square> squares) {	
 		ArrayList<SmartSquare> smartSquares = new ArrayList<SmartSquare>();
+
 		for (Square square : squares){	
 			SmartSquare smartSquare = new SmartSquare(square);
-			calculateHeuristics(board, smartSquare) ;
+			calculateHeuristics(smartSquare) ;
 			smartSquares.add(smartSquare);
 		}
+
 		Collections.sort(smartSquares);
 		squares.clear();
 		for (Square square : smartSquares){
@@ -27,41 +28,11 @@ public class Heuristics {
 	}
 
 	// Calculates heuristic for given move
-	public static void calculateHeuristics(Board board, SmartSquare square) {
-		Board tempBoard = board;
-		Player user = board.getCurrentPlayer();
-		
-		//Counts totals before you make a move
-		int old2x2 = getCenter2x2Count(tempBoard, user);
-		int old4x4 = getCenter4x4Count(tempBoard, user);
-		int oldEdges = getEdgeCount(tempBoard, user);
-		int oldCorners = getCornerCount(tempBoard, user);
-		
-		tempBoard.play(square);
-		
-		//Counts totals after you make a move
-		int middleSquareCount = getCenter2x2Count(tempBoard, user) - old2x2;
-		int outerSquareCount = getCenter4x4Count(tempBoard, user) - old4x4;
-		int edgeCount = getEdgeCount(tempBoard, user) - oldEdges;
-		int cornerCount = getCornerCount(tempBoard, user) - oldCorners;
-
-		//
-		square.updateHeuristic(middleSquareCount * 1);
-		square.updateHeuristic(outerSquareCount * 1);
-		square.updateHeuristic(edgeCount * 5);
-		square.updateHeuristic(cornerCount * 10);
-
-		// if (relinquishesCenter2x2(tempBoard, player))
-		// heuristic -= 1;
-		// if (relinquishesCenter4x4(tempBoard, player))
-		// heuristic -= 2;
-		// if (relinquishesEdge(tempBoard, player))
-		// heuristic -= 5;
-		// if (relinquishesCorner(tempBoard, player))
-		// heuristic -= 10;
-
-		return;
-
+	public static void calculateHeuristics(SmartSquare square) {
+		square.updateHeuristic(  isCenter2x2Count(square) ? 1 : 0 );
+//		square.updateHeuristic(outerSquareCount * 1);
+//		square.updateHeuristic(edgeCount * 5);
+		square.updateHeuristic(isCornerSquare(square) ? 10 : 0);
 	}
 
 	// Early in the game
@@ -74,68 +45,59 @@ public class Heuristics {
 		return board.getMoves().size() > 40;
 	}
 
-	// Returns number of inner square (2x2) tiles obtained
-	public static int getCenter2x2Count(Board board, Player user) {
-		int count = 0;
-		if (board.getSquareOwners().get(new Square(3, 3)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(3, 4)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(4, 3)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(4, 4)).equals(user))
-			count++;
-		return count;
+
+	// Returns if the possibility is  an inner square within (2x2) tile
+	public static boolean isCenter2x2Count(SmartSquare s) {
+        if ((s.getRow() == 3 && s.getColumn() == 3) ||
+                (s.getRow() == 3 && s.getColumn() == 4) ||
+                (s.getRow() == 4 && s.getColumn() == 3) ||
+                (s.getRow() == 4 && s.getColumn() == 4))
+            return true;
+        return false;
 	}
 
 	// Returns number of outer square (4x4) tiles obtained
-	public static int getCenter4x4Count(Board board, Player user) {
-		int count = 0;
-		for (int i = 2; i <= 5; i++) {
-			for (int j = 2; j <= 5; j++) {
-				if (board.getSquareOwners().get(new Square(i, j)).equals(user))
-					count++;
-			}
-		}
-
-		return count;
-	}
+//	public static int getCenter4x4Count(Board board, Player user) {
+//		int count = 0;
+//		for (int i = 2; i <= 5; i++) {
+//			for (int j = 2; j <= 5; j++) {
+//				if (board.getSquareOwners().get(new Square(i, j)).equals(user))
+//					count++;
+//			}
+//		}
+//
+//		return count;
+//	}
 
 	// Returns number of edges obtained
-	public static int getEdgeCount(Board board, Player user) {
-		int count = 0;
-		for (int i = 1; i <= 6; i++) {
-			if (board.getSquareOwners().get(new Square(i, 0)).equals(user))
-				count++;
-			if (board.getSquareOwners().get(new Square(0, i)).equals(user))
-				count++;
-		}
-		for (int i = 1; i <= 6; i++) {
-			if (board.getSquareOwners().get(new Square(i, 7)).equals(user))
-				count++;
-			if (board.getSquareOwners().get(new Square(7, i)).equals(user))
-				count++;
-		}
+//	public static int getEdgeCount(Board board, Player user) {
+//		int count = 0;
+//		for (int i = 1; i <= 6; i++) {
+//			if (board.getSquareOwners().get(new Square(i, 0)).equals(user))
+//				count++;
+//			if (board.getSquareOwners().get(new Square(0, i)).equals(user))
+//				count++;
+//		}
+//		for (int i = 1; i <= 6; i++) {
+//			if (board.getSquareOwners().get(new Square(i, 7)).equals(user))
+//				count++;
+//			if (board.getSquareOwners().get(new Square(7, i)).equals(user))
+//				count++;
+//		}
+//
+//		return count;
+//	}
 
-		return count;
-	}
+    public static boolean isCornerSquare(SmartSquare s) {
+        if ((s.getRow() == 0 && s.getColumn() == 0) ||
+                (s.getRow() == 0 && s.getColumn() == 7) ||
+                (s.getRow() == 7 && s.getColumn() == 0) ||
+                (s.getRow() == 7 && s.getColumn() == 7))
+            return true;
+        return false;
+    }
 
-	// Returns number of corners obtained
-	public static int getCornerCount(Board board, Player user) {
-		int count = 0;
-		if (board.getSquareOwners().get(new Square(0, 0)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(0, 7)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(7, 0)).equals(user))
-			count++;
-		if (board.getSquareOwners().get(new Square(7, 7)).equals(user))
-			count++;
 
-		return count;
-	}
-
-	// Extension of Move class
 	private static class SmartSquare extends Square implements Comparable {
 		int heuristic;
 
@@ -152,9 +114,9 @@ public class Heuristics {
 		public int compareTo(Object o) {
 			SmartSquare other = (SmartSquare) o;
 			if (this.heuristic > other.heuristic)
-				return 1;
-			if (this.heuristic < other.heuristic)
 				return -1;
+			if (this.heuristic < other.heuristic)
+				return 1;
 			return 0;
 		}
 
