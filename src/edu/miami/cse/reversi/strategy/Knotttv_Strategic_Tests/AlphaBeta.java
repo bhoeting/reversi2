@@ -3,10 +3,8 @@ package edu.miami.cse.reversi.strategy.Knotttv_Strategic_Tests;
 import edu.miami.cse.reversi.Board;
 import edu.miami.cse.reversi.Square;
 import edu.miami.cse.reversi.Strategy;
-
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Collections;
 
 public class AlphaBeta implements Strategy {
 
@@ -44,19 +42,20 @@ public class AlphaBeta implements Strategy {
         //Send to brendan
         ArrayList<Square> possibileMoves = new ArrayList<>(board.getCurrentPossibleSquares());
 
-        System.out.print("Before: ");
-        for(Square s : possibileMoves){
-            System.out.print(s.toString() + " ");
-        }
-        System.out.println();
-        possibileMoves = Heuristics.orderMoves(board, possibileMoves);
-        System.out.print("After: ");
-        for(Square s : possibileMoves){
-            System.out.print(s.toString() + " ");
-        }
+//        System.out.print("Before: ");
+//        for(Square s : possibileMoves){
+//            System.out.print(s.toString() + " ");
+//        }
+//        System.out.println();
+//        possibileMoves = Heuristics.orderMoves(board, possibileMoves);
+//        System.out.print("After: ");
+//        for(Square s : possibileMoves){
+//            System.out.print(s.toString() + " ");
+//        }
+//
+//        System.out.println();
 
-        System.out.println();
-
+        possibileMoves = orderMoves(board, possibileMoves);
 
         //Start with an arbitrary move, in the future we will do an intelligent move selection
         //send wantToMaximize as false to start because the immediate proceeding recursive call will be a minimization
@@ -78,8 +77,8 @@ public class AlphaBeta implements Strategy {
         for(Square s : possibileMoves){
             if (alpha >= beta || initialBoard.isComplete()) break;
 
-            if(MAX_TIME - (System.currentTimeMillis() - startTime) < MAX_TIME - 100){
-//                System.out.println("Ran Out of Time");
+            if(MAX_TIME - (System.currentTimeMillis() - startTime) < MAX_TIME - 500){
+                System.out.println("Ran Out of Time");
                 return optimalMove;
                 }
             //update aplha/beta based on the currentUtilityScore
@@ -181,5 +180,91 @@ public class AlphaBeta implements Strategy {
         }
         return optimalUtility;
     }
+
+
+    public static ArrayList<Square> orderMoves(Board board, ArrayList<Square> squares) {
+        ArrayList<SmartSquare> smartSquares = new ArrayList<SmartSquare>();
+
+        for (Square square : squares){
+           SmartSquare smartSquare = new SmartSquare(square);
+            calculateHeuristics(smartSquare) ;
+            smartSquares.add(smartSquare);
+        }
+
+        Collections.sort(smartSquares);
+        squares.clear();
+        for (Square square : smartSquares){
+            squares.add(square);
+        }
+        return squares;
+    }
+
+    // Calculates heuristic for given move
+    public static void calculateHeuristics(SmartSquare square) {
+//		square.updateHeuristic(  isCenter2x2Count(square) ? 2 : 0 );
+        square.updateHeuristic(isCornerSquare(square) ? 15 : 0);
+        square.updateHeuristic(isCenter4x4(square) ? 5 : 0);
+        square.updateHeuristic(isEdge(square) ? 10 : 0);
+    }
+
+    // Returns if the possibility is  an inner square within (2x2) tile
+    public static boolean isCenter2x2Count(SmartSquare s) {
+        if ((s.getRow() == 3 && s.getColumn() == 3) ||
+                (s.getRow() == 3 && s.getColumn() == 4) ||
+                (s.getRow() == 4 && s.getColumn() == 3) ||
+                (s.getRow() == 4 && s.getColumn() == 4))
+            return true;
+        return false;
+    }
+
+    //	 Returns number of outer square (4x4) tiles obtained
+    public static boolean isCenter4x4(SmartSquare s) {
+        for (int i = 2; i <= 5; i++) {
+            for (int j = 2; j <= 5; j++) {
+                if(s.getRow() == i && s.getColumn() == j) return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isEdge(SmartSquare s){
+        return (s.getRow() == 0 || s.getColumn() == 7);
+    }
+
+
+    public static boolean isCornerSquare(SmartSquare s) {
+        if ((s.getRow() == 0 && s.getColumn() == 0) ||
+                (s.getRow() == 0 && s.getColumn() == 7) ||
+                (s.getRow() == 7 && s.getColumn() == 0) ||
+                (s.getRow() == 7 && s.getColumn() == 7))
+            return true;
+        return false;
+    }
+
+
+    private static class SmartSquare extends Square implements Comparable {
+        int heuristic;
+
+        public SmartSquare(Square square) {
+            super(square.getRow(), square.getColumn());
+            this.heuristic = 0;
+        }
+
+        public void updateHeuristic(int value) {
+            heuristic += value;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            SmartSquare other = (SmartSquare) o;
+            if (this.heuristic > other.heuristic)
+                return -1;
+            if (this.heuristic < other.heuristic)
+                return 1;
+            return 0;
+        }
+
+    }
+
 
 }
