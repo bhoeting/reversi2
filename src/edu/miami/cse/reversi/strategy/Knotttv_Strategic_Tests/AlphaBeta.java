@@ -4,6 +4,7 @@ import edu.miami.cse.reversi.Board;
 import edu.miami.cse.reversi.Square;
 import edu.miami.cse.reversi.Strategy;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class AlphaBeta implements Strategy {
@@ -42,12 +43,12 @@ public class AlphaBeta implements Strategy {
         //Send to brendan
 //        Object[] possibileMoves = Heuristics.orderMoves(board, initialBoard.getCurrentPossibleSquares().toArray());
 
-        Object[] possibileMoves = board.getCurrentPossibleSquares().toArray();
+        ArrayList<Square> possibileMoves = new ArrayList<>(board.getCurrentPossibleSquares());
 
         //Start with an arbitrary move, in the future we will do an intelligent move selection
         //send wantToMaximize as false to start because the immediate proceeding recursive call will be a minimization
 
-        optimalMove = (Square)possibileMoves[new Random().nextInt(possibileMoves.length)];
+        optimalMove = possibileMoves.get(new Random().nextInt(possibileMoves.size()));
 
 //        optimalMove = (Square)possibileMoves[0];
 
@@ -58,7 +59,7 @@ public class AlphaBeta implements Strategy {
                 allowedNodes--,
                 !wantToMaximize);
 
-        for( int i = 0; i < possibileMoves.length; i++){
+        for(Square s : possibileMoves){
             if (alpha >= beta || initialBoard.isComplete()) break;
 
             if(MAX_TIME - (System.currentTimeMillis() - startTime) < MAX_TIME - 100){
@@ -75,7 +76,7 @@ public class AlphaBeta implements Strategy {
             }
 
             //For each of the possible moves we want to call a Minimization or Maximization of the subtree
-            int proceedingUtilityScore = a_b_Pruning(initialBoard.play((Square)possibileMoves[i]),
+            int proceedingUtilityScore = a_b_Pruning(initialBoard.play(s),
                     alpha,
                     beta,
                     allowedDepth,
@@ -87,16 +88,17 @@ public class AlphaBeta implements Strategy {
             //we would want to update the aplha accordingly
             //Is the utility of testMove lower than the currentUtility, if we are testing for the opponent minimization
             //we would want to update the beta accordingly and use this move to minimize opponent opportunity
+
             if (wantToMaximize) {
                 if (proceedingUtilityScore > currentUtilityScore) {
                     currentUtilityScore = proceedingUtilityScore;
-                    optimalMove = (Square)possibileMoves[i];
+                    optimalMove = s;
                 }
                 alpha = alpha > currentUtilityScore ? alpha : currentUtilityScore;
             } else {
                 if (proceedingUtilityScore < currentUtilityScore) {
                     currentUtilityScore = proceedingUtilityScore;
-                    optimalMove = (Square)possibileMoves[i];
+                    optimalMove = s;
                 }
                 beta = beta > currentUtilityScore ? beta : currentUtilityScore;
             }
@@ -109,33 +111,33 @@ public class AlphaBeta implements Strategy {
     }
 
     private int a_b_Pruning(Board instanceBoard, int alpha, int beta, int allowedDepth, int allowedNodes, boolean wantToMaximize) {
-
         //returns the score at the end of this recursive branch, to be compared to the other scores, higher is better for us
         // we want to maximize the score
-//        if (allowedDepth <= 0) {
+
+        if (allowedDepth <= 0) {
 //            depthCutoff++;
-//            return Math.abs(instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer()) -
-//                    instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer().opponent()));
-//        }
+            return Math.abs(instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer()) -
+                    instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer().opponent()));
+        }
 
         if(instanceBoard.isComplete()){
             return Math.abs(instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer()) -
                     instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer().opponent()));
         }
 
-        if(allowedNodes <= 0) {
-            nodeCutoff++;
-            return Math.abs(instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer()) -
-                    instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer().opponent()));
-        }
+//        if(allowedNodes <= 0) {
+//            nodeCutoff++;
+//            return Math.abs(instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer()) -
+//                    instanceBoard.getPlayerSquareCounts().get(instanceBoard.getCurrentPlayer().opponent()));
+//        }
 
         allowedDepth--;
 
         //Send to brendan
-        Object[] instancePossibileMoves = instanceBoard.getCurrentPossibleSquares().toArray();
+        ArrayList<Square> instancePossibileMoves = new ArrayList<>(instanceBoard.getCurrentPossibleSquares());
 
         //No Possible Moves, Pass
-        if(instancePossibileMoves.length == 0){
+        if(instancePossibileMoves.size() == 0){
             return a_b_Pruning(instanceBoard.pass(),
                     alpha,
                     beta,
@@ -146,10 +148,10 @@ public class AlphaBeta implements Strategy {
 
         int optimalUtility = wantToMaximize ? -999 : 999;
 
-        for(int i = 0; i < instancePossibileMoves.length ; i++){
+       for(Square s : instancePossibileMoves){
             if (alpha >= beta) break;
 
-            int proceedingUtilityInstanceScore = a_b_Pruning(instanceBoard.play((Square)instancePossibileMoves[i]),
+            int proceedingUtilityInstanceScore = a_b_Pruning(instanceBoard.play(s),
                     alpha,
                     beta,
                     allowedDepth,
