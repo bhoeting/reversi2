@@ -9,8 +9,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
-import edu.miami.cse.reversi.strategy.*;
-import edu.miami.cse.reversi.strategy.Knotttv_Strategic_Tests.AlphaBeta;
+import edu.miami.cse.reversi.strategy.Group3;
+import edu.miami.cse.reversi.strategy.RandomStrategy;
 
 public class ReversiTournament {
 	/**
@@ -18,18 +18,18 @@ public class ReversiTournament {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		int nGames = 2;
+		int nGames = 50;
 		long timeout = 1;
 		TimeUnit timeoutUnit = TimeUnit.SECONDS;
 
-		// List of the strategies in the tournament
+		// List of the strategies in the tournament 
 		List<Strategy> strategies = Lists.newArrayList();
 
 		strategies.add(new RandomStrategy());
-		strategies.add(new AlphaBeta());
+		strategies.add(new Group3());
 //		strategies.add(new Human());
 
-		// The number of wins of each strategy
+		// The number of wins of each strategy 
 		Map<Strategy, Integer> wins = Maps.newHashMap();
 		for (Strategy strategy : strategies) {
 			wins.put(strategy, 0);
@@ -57,7 +57,7 @@ public class ReversiTournament {
 					} catch (StrategyTimedOutException e) {
 						winner = e.getOpponentStrategy();
 					}
-					// If one of the strategies timed out, the opponent is considered the winner
+					// If one of the strategies timed out, the opponent is considered the winner 
 					if (winner != null) {
 						wins.put(winner, wins.get(winner) + 1);
 					}
@@ -75,6 +75,7 @@ public class ReversiTournament {
 					}
 				}
 			}
+			
 		}
 
 		/* The first thing we do is setting the start time. */
@@ -92,5 +93,5 @@ public class ReversiTournament {
 
 
 
-
+	
 }
